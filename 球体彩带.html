@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>炫酷圆球</title>
+    <style>
+      *{
+          padding: 0;
+          margin: 0;
+      }
+    </style>
+</head>
+<body>
+<canvas id="cas"></canvas>
+</body>
+<script>
+    var mycanvas = document.getElementById("cas");
+    var ctx = mycanvas.getContext("2d");
+    //让画布铺满屏幕
+    mycanvas.width = document.documentElement.clientWidth;
+    mycanvas.height = document.documentElement.clientHeight;
+
+    //存放创建的小球
+    var ballArr = [];
+    //创建一个圆球的对象 直接new一个就是一个想要的圆球实例
+    function Ball(x,y) {
+        this.x = x;
+        this.y = y;
+        this.r = 18;
+        //每次变化的范围  控制在-10~20之间  这样效果是向四周发散  同时向下发散的多
+        this.dx = parseInt(Math.random()*30)-10;
+        this.dy = parseInt(Math.random()*30)-10;
+        //随机颜色变化
+        this.color = "rgba("+parseInt(Math.random()*256)+","+Math.random()*256+","+Math.random()*256+","+Math.random()+")";
+        //将每个实例加入数组
+        ballArr.push(this);
+    }
+    //将小球呈现到画布上
+    Ball.prototype.render = function () {
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.r,0,Math.PI*2,false);
+        ctx.closePath();
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    };
+
+    // 小球的位置在一个范围内波动
+    Ball.prototype.update = function () {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.r --;
+        //半径小于0  从数组中删除
+        if (this.r<0){
+            this.delete()
+        }
+
+
+    };
+    //从小球数组中检索自己，将自己删除
+    Ball.prototype.delete = function () {
+        for (let i=0; i<ballArr.length; i++){
+            if (ballArr[i] === this){
+                ballArr.splice(i,1)
+            }
+
+        }
+    };
+
+   // 每20S清除画布
+   specialBallMove = function () {
+       // 鼠标点击  触发onmousemove事件  创建小球
+       mycanvas.onmousedown = function(){
+           mycanvas.onmousemove = function(e){
+               new Ball(e.clientX,e.clientY)
+           };
+
+       };
+       //鼠标抬起 onmousemove事件取消 停止创建小球
+       mycanvas.onmouseup = function(){
+           mycanvas.onmousemove = null
+       };
+       setInterval(function () {
+           //先清空画布 注意canvas和dom不同 一旦呈现到画布上之后 是无法改变其属性的  只能清除
+           // 每个小球有自己的属性 所以在一次次重绘之中是线性的变化
+           //所以 在这里我们的思维不是先生成小球 在移动小球  而是每20ms就把画布全部清空 然后通过遍历数组重新绘制   也就是每20ms是一副新的画
+           //  再将FPS 调高  人眼看起来就是一幅幅画连接起来 即产生动画效果
+           ctx.clearRect(0,0,mycanvas.width,mycanvas.height);
+           for (let i=1; i<ballArr.length; i++){
+               ballArr[i].update();
+               ballArr[i]&&ballArr[i].render();
+           }
+
+       },20)
+    };
+   //每20s不清楚画布
+   firework = function () {
+       // 鼠标点击  触发onmousemove事件  创建小球
+       mycanvas.onmousedown = function(){
+           mycanvas.onmousemove = function(e){
+               new Ball(e.clientX,e.clientY)
+           };
+
+       };
+       //鼠标抬起 onmousemove事件取消 停止创建小球
+       mycanvas.onmouseup = function(){
+           mycanvas.onmousemove = null
+       };
+       setInterval(function () {
+           //先清空画布 注意canvas和dom不同 一旦呈现到画布上之后 是无法改变其属性的  只能清除
+           // 每个小球有自己的属性 所以在一次次重绘之中是线性的变化
+           //所以 在这里我们的思维不是先生成小球 在移动小球  而是每20ms就把画布全部清空 然后通过遍历数组重新绘制   也就是每20ms是一副新的画
+           //  再将FPS 调高  人眼看起来就是一幅幅画连接起来 即产生动画效果
+           // ctx.clearRect(0,0,mycanvas.width,mycanvas.height);
+           for (let i=1; i<ballArr.length; i++){
+               ballArr[i].update();
+               ballArr[i]&&ballArr[i].render();
+           }
+
+       },20)
+   }
+
+    specialBallMove();
+</script>
+</html>

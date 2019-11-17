@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+
+
+        .main div {
+            float: left;
+        }
+
+        .drawBoard {
+            width: 1000px;
+            background: whitesmoke;
+            border: 1px solid gray;
+        }
+
+        .tools {
+            margin-left: 50px;
+            height: 100px;
+            width: 150px;
+
+        }
+
+        .tools div {
+            cursor: pointer;
+            width: 150px;
+            height: 60px;
+            margin-bottom: 15px;
+            background: navajowhite;
+            text-align: center;
+            line-height: 60px;
+            border-radius: 50%;
+            transition: all 1s ease 0s;
+        }
+
+        .tools div:hover {
+            width: 180px;
+            height: 70px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="main">
+    <div class="drawBoard">
+        <canvas width="1000" height="500" id="mycanvas"></canvas>
+    </div>
+    <div class="tools">
+        <div class="line">直线</div>
+        <div class="eraser">橡皮擦</div>
+        <div class="shanxing">发散</div>
+        <!--<div id="specialBall">炫酷小球</div>-->
+        <div id="firework">彩色泼墨</div>
+        <div style="background-color: gray;color: white" id="clearScreen">清空</div>
+        <div style="background-color: gray;color: white" id="choice">当前选择：直线</div>
+    </div>
+</div>
+</body>
+<script>
+    var $line = document.getElementsByClassName("line")[0];
+    var $eraser = document.getElementsByClassName("eraser")[0];
+    var $shanxing = document.getElementsByClassName("shanxing")[0];
+    // var $specialBall = document.getElementById("specialBall");
+    var $firework = document.getElementById("firework");
+    var $clearScreen = document.getElementById("clearScreen");
+    var $choiceTxt = document.getElementById("choice");
+    //画布
+    var mycanvas = document.getElementById("mycanvas");
+    var ctx = mycanvas.getContext("2d");
+    var begainX = 0, begainY = 0, endX = 0, endY = 0;
+
+    //默认事件是画直线
+    drawLine();
+    $line.onclick = function () {
+
+        $choiceTxt.innerHTML = "当前选择：直线";
+        drawLine();
+
+    };
+    $eraser.onclick = function () {
+        erasering();
+        $choiceTxt.innerHTML = "当前选择：橡皮擦";
+    };
+    $shanxing.onclick = function () {
+        shanxing();
+        $choiceTxt.innerHTML = "当前选择：发散";
+    };
+    $clearScreen.onclick = function(){
+        ctx.clearRect(0,0,mycanvas.width,mycanvas.height)
+    };
+    // $specialBall.onclick = function () {
+    //     specialBallMove();
+    //     $choiceTxt.innerHTML = "当前选择：炫酷小球";
+    // };
+    $firework.onclick = function () {
+        firework();
+        $choiceTxt.innerHTML = "当前选择：彩色泼墨";
+    };
+    //画直线
+    function drawLine() {
+        mycanvas.onmousedown = function (e) {
+            begainX = e.clientX;
+            begainY = e.clientY;
+        };
+        mycanvas.onmouseup = function (e) {
+            endX = e.clientX;
+            endY = e.clientY;
+            ctx.beginPath();
+            ctx.moveTo(begainX,begainY);
+            ctx.lineTo(endX,endY);
+            ctx.stroke();
+        };
+        //动态直线  目前存在bug 只能拉一根直线
+        // var lineArr = [];
+        // mycanvas.onmousedown = function (e) {
+        //     begainX = e.clientX;
+        //     begainY = e.clientY;
+        //     mycanvas.onmousemove = function (e) {
+        //         endX = e.clientX;
+        //         endY = e.clientY;
+        //         lineArr.push([endX,endY])
+        //     }
+        // };
+        // mycanvas.onmouseup = function () {
+        //     mycanvas.onmousemove = null;
+        // };
+        // setInterval(function () {
+        //
+        //        for (let i=0; i<lineArr.length; i++){
+        //            ctx.beginPath();
+        //            ctx.moveTo(begainX,begainY);
+        //            ctx.lineTo(lineArr[i][0],lineArr[i][1]);
+        //            ctx.stroke();
+        //        }
+        // },20)
+
+    }
+    //画扇形
+    function shanxing() {
+        mycanvas.onmousedown = function (e) {
+            begainX = e.clientX;
+            begainY = e.clientY;
+            mycanvas.onmousemove = function (e) {
+                endX = e.clientX;
+                endY = e.clientY;
+                // console.log(wid);
+                // console.log(hei);
+                ctx.beginPath();
+                ctx.moveTo(begainX, begainY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+
+            }
+
+        };
+        mycanvas.onmouseup = function (e) {
+            mycanvas.onmousemove = null
+        };
+    }
+    //橡皮擦
+    function erasering() {
+        mycanvas.onmousedown = function (e) {
+
+            mycanvas.onmousemove = function (e) {
+
+                var wid = e.offsetX;
+                var hei = e.offsetY;
+                console.log(wid);
+                console.log(hei);
+                //context.clearRect(wid-10, hei-10, 20, 20);
+                ctx.beginPath();
+                ctx.arc(wid, hei, 10, 0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.fillStyle = 'whitesmoke';
+                ctx.fill();
+
+            }
+
+        };
+        mycanvas.onmouseup = function () {
+            mycanvas.onmousemove = null;
+        }
+    }
+    /***********************************球***************************************** */
+
+    // 存放创建的小球
+    var ballArr = [];
+    //创建一个圆球的对象 直接new一个就是一个想要的圆球实例
+    function Ball(x,y) {
+        this.x = x;
+        this.y = y;
+        this.r = 15;
+        //每次变化的范围  控制在-10~20之间  这样效果是向四周发散  同时向下发散的多
+        this.dx = parseInt(Math.random()*18)-9;
+        this.dy = parseInt(Math.random()*18)-9;
+        //随机颜色变化
+        this.color = "rgba("+parseInt(Math.random()*256)+","+Math.random()*256+","+Math.random()*256+","+Math.random()+")";
+        //将每个实例加入数组
+        ballArr.push(this);
+    }
+    //将小球呈现到画布上
+    Ball.prototype.render = function () {
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.r,0,Math.PI*2,false);
+        ctx.closePath();
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    };
+
+    // 小球的位置在一个范围内波动
+    Ball.prototype.update = function () {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.r --;
+        //半径小于0  从数组中删除
+        if (this.r<0){
+            this.delete()
+        }
+
+
+    };
+    //从小球数组中检索自己，将自己删除
+    Ball.prototype.delete = function () {
+        for (let i=0; i<ballArr.length; i++){
+            if (ballArr[i] === this){
+                ballArr.splice(i,1)
+            }
+
+        }
+    };
+
+    // 每20S清除画布
+    // specialBallMove = function () {
+    //     // 鼠标点击  触发onmousemove事件  创建小球
+    //     mycanvas.onmousedown = function(){
+    //         mycanvas.onmousemove = function(e){
+    //             new Ball(e.clientX,e.clientY)
+    //         };
+    //
+    //     };
+    //     //鼠标抬起 onmousemove事件取消 停止创建小球
+    //     mycanvas.onmouseup = function(){
+    //         mycanvas.onmousemove = null
+    //     };
+    //     setInterval(function () {
+    //         //先清空画布 注意canvas和dom不同 一旦呈现到画布上之后 是无法改变其属性的  只能清除
+    //         // 每个小球有自己的属性 所以在一次次重绘之中是线性的变化
+    //         //所以 在这里我们的思维不是先生成小球 在移动小球  而是每20ms就把画布全部清空 然后通过遍历数组重新绘制   也就是每20ms是一副新的画
+    //         //  再将FPS 调高  人眼看起来就是一幅幅画连接起来 即产生动画效果
+    //         ctx.clearRect(0,0,mycanvas.width,mycanvas.height);
+    //         for (let i=1; i<ballArr.length; i++){
+    //             ballArr[i].update();
+    //             ballArr[i]&&ballArr[i].render();
+    //         }
+    //
+    //     },20)
+    // };
+    //每20s不清楚画布
+    firework = function () {
+        // 鼠标点击  触发onmousemove事件  创建小球
+        mycanvas.onmousedown = function(){
+            mycanvas.onmousemove = function(e){
+                new Ball(e.clientX,e.clientY)
+            };
+
+        };
+        //鼠标抬起 onmousemove事件取消 停止创建小球
+        mycanvas.onmouseup = function(){
+            mycanvas.onmousemove = null
+        };
+        setInterval(function () {
+            //先清空画布 注意canvas和dom不同 一旦呈现到画布上之后 是无法改变其属性的  只能清除
+            // 每个小球有自己的属性 所以在一次次重绘之中是线性的变化
+            //所以 在这里我们的思维不是先生成小球 在移动小球  而是每20ms就把画布全部清空 然后通过遍历数组重新绘制   也就是每20ms是一副新的画
+            //  再将FPS 调高  人眼看起来就是一幅幅画连接起来 即产生动画效果
+            // ctx.clearRect(0,0,mycanvas.width,mycanvas.height);
+            for (let i=1; i<ballArr.length; i++){
+                ballArr[i].update();
+                ballArr[i]&&ballArr[i].render();
+            }
+
+        },15)
+    }
+
+</script>
+</html>
